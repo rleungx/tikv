@@ -899,6 +899,7 @@ impl<T: Transport, C: PdClient> Store<T, C> {
                     let now = Instant::now();
                     p.peer_heartbeats.insert(peer.get_id(), now);
                     if p.is_leader() {
+                        debug!("peers_start_pending_time ready push {:?} type {:?}",peer.get_id(),change_type);
                         p.peers_start_pending_time.push((peer.get_id(), now));
                     }
                     p.insert_peer_cache(peer);
@@ -913,7 +914,7 @@ impl<T: Transport, C: PdClient> Store<T, C> {
                 }
             }
             my_peer_id = p.peer_id();
-            debug!("start_pending ready change {:?}",p.peers_start_pending_time);
+            debug!("start_pending ready change {:?} type {:?}",p.peers_start_pending_time,change_type);
         } else {
             panic!("{} missing region {}", self.tag, region_id);
         }

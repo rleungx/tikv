@@ -727,6 +727,7 @@ impl Peer {
                         .any(|&(pid, _)| pid == id)
                     {
                         let now = Instant::now();
+                        debug!("peers_start_pending_time collect push {:?}",id);
                         self.peers_start_pending_time.push((id, now));
                         debug!("{} peer {} start pending at {:?}", self.tag, id, now);
                     }
