@@ -938,7 +938,7 @@ pub struct TiKvConfig {
 impl Default for TiKvConfig {
     fn default() -> TiKvConfig {
         TiKvConfig {
-            log_level: slog::Level::Info,
+            log_level: slog::Level::Debug,
             log_file: "".to_owned(),
             log_rotation_timespan: ReadableDuration::hours(24),
             readpool: ReadPoolConfig::default(),
