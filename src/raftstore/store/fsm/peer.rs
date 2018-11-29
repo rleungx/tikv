@@ -913,6 +913,7 @@ impl<T: Transport, C: PdClient> Store<T, C> {
                 }
             }
             my_peer_id = p.peer_id();
+            debug!("start_pending ready change {:?}",p.peers_start_pending_time);
         } else {
             panic!("{} missing region {}", self.tag, region_id);
         }

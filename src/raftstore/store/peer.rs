@@ -733,6 +733,7 @@ impl Peer {
                 }
             }
         }
+        debug!("start_pending collect {:?}",self.peers_start_pending_time);
         pending_peers
     }
 
@@ -744,6 +745,7 @@ impl Peer {
             self.peers_start_pending_time = vec![];
             return false;
         }
+        debug!("start_pending catch {:?}",self.peers_start_pending_time);
         for i in 0..self.peers_start_pending_time.len() {
             if self.peers_start_pending_time[i].0 != peer_id {
                 continue;
