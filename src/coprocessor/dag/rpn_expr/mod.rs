@@ -8,6 +8,7 @@ pub mod impl_arithmetic;
 pub mod impl_cast;
 pub mod impl_compare;
 pub mod impl_control;
+pub mod impl_math;
 pub mod impl_like;
 pub mod impl_op;
 
@@ -22,6 +23,7 @@ use self::impl_compare::*;
 use self::impl_control::*;
 use self::impl_like::*;
 use self::impl_op::*;
+use self::impl_math::*;
 use crate::coprocessor::codec::data_type::*;
 use crate::coprocessor::Result;
 
@@ -170,6 +172,8 @@ fn map_pb_sig_to_rpn_func(value: ScalarFuncSig, children: &[Expr]) -> Result<Rpn
         ScalarFuncSig::IfNullTime => if_null_fn_meta::<DateTime>(),
         ScalarFuncSig::IfNullDuration => if_null_fn_meta::<Duration>(),
         ScalarFuncSig::IfNullJson => if_null_fn_meta::<Json>(),
+        ScalarFuncSig::CeilReal => ceil_real_fn_meta(),
+        ScalarFuncSig::CeilIntToInt => ceil_int_to_int_fn_meta(),
         _ => return Err(box_err!(
             "ScalarFunction {:?} is not supported in batch mode",
             value
