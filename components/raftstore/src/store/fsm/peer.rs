@@ -2220,19 +2220,11 @@ where
                 "peer_id" => self.fsm.peer_id(),
                 "split_count" => regions.len(),
             );
-            // Now pd only uses ReportBatchSplit for history operation show,
-            // so we send it independently here.
-            let task = PdTask::ReportBatchSplit {
-                regions: regions.to_vec(),
-            };
-            if let Err(e) = self.ctx.pd_scheduler.schedule(task) {
-                error!(
-                    "failed to notify pd";
-                    "region_id" => self.fsm.region_id(),
-                    "peer_id" => self.fsm.peer_id(),
-                    "err" => %e,
-                );
+
+            if let Err(e) = check_split_regions(&regions) {
+                warn!("check split failed"; "err" => ?e)
             }
+
             if let Err(e) = self.ctx.split_check_scheduler.schedule(
                 SplitCheckTask::GetRegionApproximateSizeAndKeys {
                     region: self.fsm.peer.region().clone(),
@@ -4112,6 +4104,28 @@ fn new_compact_log_request(
     admin.mut_compact_log().set_compact_term(compact_term);
     request.set_admin_request(admin);
     request
+}
+
+fn check_split_regions(regions: &[metapb::Region]) -> Result<()> {
+    let length = regions.len();
+    if length <= 1 {
+        return Err(box_err!("invalid split region"))
+    }
+    for i in 1..length {
+        let left = regions[i - 1].clone();
+        let right = regions[i].clone();
+        let left_start_key = left.get_start_key();
+        let left_end_key = left.get_end_key();
+        let right_start_key = right.get_start_key();
+        let right_end_key=right.get_end_key() ;
+        if left_end_key != right_start_key {
+            return Err(box_err!("invalid split region"));
+        }
+        if !right_end_key.is_empty() && left_start_key >= right_end_key {
+            return Err(box_err!("invalid split region"));
+        }
+    }
+    Ok(())
 }
 
 impl<'a, EK, ER, T: Transport> PeerFsmDelegate<'a, EK, ER, T>

@@ -121,9 +121,6 @@ where
         stats: pdpb::StoreStats,
         store_info: StoreInfo<E>,
     },
-    ReportBatchSplit {
-        regions: Vec<metapb::Region>,
-    },
     ValidatePeer {
         region: metapb::Region,
         peer: metapb::Peer,
@@ -239,7 +236,6 @@ where
             Task::StoreHeartbeat { ref stats, .. } => {
                 write!(f, "store heartbeat stats: {:?}", stats)
             }
-            Task::ReportBatchSplit { ref regions } => write!(f, "report split {:?}", regions),
             Task::ValidatePeer {
                 ref region,
                 ref peer,
@@ -725,13 +721,6 @@ where
         spawn_local(f);
     }
 
-    fn handle_report_batch_split(&self, regions: Vec<metapb::Region>) {
-        let f = self.pd_client.report_batch_split(regions).map_err(|e| {
-            warn!("report split failed"; "err" => ?e);
-        });
-        spawn_local(f);
-    }
-
     fn handle_validate_peer(&self, local_region: metapb::Region, peer: metapb::Peer) {
         let router = self.router.clone();
         let resp = self.pd_client.get_region_by_id(local_region.get_id());
@@ -1156,7 +1145,6 @@ where
             Task::StoreHeartbeat { stats, store_info } => {
                 self.handle_store_heartbeat(stats, store_info)
             }
-            Task::ReportBatchSplit { regions } => self.handle_report_batch_split(regions),
             Task::ValidatePeer { region, peer } => self.handle_validate_peer(region, peer),
             Task::ReadStats { read_stats } => self.handle_read_stats(read_stats),
             Task::DestroyPeer { region_id } => self.handle_destroy_peer(region_id),
